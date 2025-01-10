@@ -23,3 +23,5 @@
 -	Argon / Scrypt / Bcrypt
 -	Dotenv.net (https://github.com/bolorundurowb/dotenv.net) или аналоги
 -	Docker
+
+Email пусть будет уникальным
