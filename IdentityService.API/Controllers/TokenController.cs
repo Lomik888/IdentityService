@@ -1,4 +1,5 @@
 ﻿using IdentityService.Domain.Interfaces.Services;
+using IdentityService.Domain.Result.TokenResult;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +10,26 @@ namespace IdentityService.API.Controllers;
 [ApiController]
 public class TokenController : ControllerBase
 {
-    private readonly IJwtTokenService jwtTokenService;
+    #region DI ctor
+
+    private readonly IJwtTokenService _jwtTokenService;
 
     public TokenController(IJwtTokenService jwtTokenService)
     {
-        this.jwtTokenService = jwtTokenService;
+        _jwtTokenService = jwtTokenService;
     }
-    
-    
+
+    #endregion
+
+    public async Task<ActionResult<UpdateTokensResult>> RefreshAccessTokenAsync()
+    {
+        var response = await _jwtTokenService.UpdateJwtTokens(HttpContext.Request.Headers.Authorization.ToString());
+
+        if (response.IsSuccess)
+        {
+            return Ok(response);
+        }
+
+        return BadRequest(response);
+    }
 }

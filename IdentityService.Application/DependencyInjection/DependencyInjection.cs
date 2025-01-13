@@ -1,11 +1,9 @@
-using DotNetEnv;
-using IdentityService.Application.Extantions;
+using IdentityService.Application.Extensions;
 using IdentityService.Application.Mapping;
 using IdentityService.Application.Services;
-using IdentityService.Domain.Interfaces.Extantions;
+using IdentityService.Domain.Interfaces.Extensions;
 using IdentityService.Domain.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
 
 namespace IdentityService.Application.DependencyInjection;
 
@@ -15,20 +13,8 @@ public static class DependencyInjection
     {
         services.AddAutoMapper(typeof(MappingProfile));
 
-        // services.AddScoped<IDatabase>(cfg =>
-        // {
-        //     var multiplexer = ConnectionMultiplexer.Connect(Env.GetString("REDIS_URL"));
-        //     return multiplexer.GetDatabase();
-        // });
-        //
-        // services.AddStackExchangeRedisCache(options =>
-        // {
-        //     options.Configuration = Env.GetString("REDIS_URL_USERS");
-        //     options.InstanceName = Env.GetString("REDIS_INSTANCENAME");
-        // });
-
         services.InitServices();
-        services.InitExtations();
+        services.InitExtensions();
     }
 
     private static void InitServices(this IServiceCollection services)
@@ -38,9 +24,8 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, Services.IdentityService>();
     }
 
-    private static void InitExtations(this IServiceCollection services)
+    private static void InitExtensions(this IServiceCollection services)
     {
-        // services.AddScoped<IRedisService, RedisService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtGenerator, JwtGenerator>();
     }

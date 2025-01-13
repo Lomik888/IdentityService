@@ -4,10 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using DotNetEnv;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Extantions;
+using IdentityService.Domain.Interfaces.Extensions;
 using Microsoft.IdentityModel.Tokens;
 
-namespace IdentityService.Application.Extantions;
+namespace IdentityService.Application.Extensions;
 
 public class JwtGenerator : IJwtGenerator
 {
@@ -15,7 +15,7 @@ public class JwtGenerator : IJwtGenerator
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim("Id", userId.ToString()),
         };
 
         var jwt = new JwtSecurityToken(
@@ -28,6 +28,20 @@ public class JwtGenerator : IJwtGenerator
                 SecurityAlgorithms.HmacSha256));
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
+    public IEnumerable<Claim> GetClaimsFromAccessToken(string accessToken)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var jwtToken = jwtHandler.ReadJwtToken(accessToken.Split(' ').Last());
+        var claims = jwtToken.Claims;
+        return claims;
+    }
+
+    public string GetIdFromAccessToken(string accessToken)
+    {
+        var claims = GetClaimsFromAccessToken(accessToken);
+        return claims.Single(x => x.Type == "Id")?.Value.ToString();
     }
 
     public RefreshToken GetRefreshToken()

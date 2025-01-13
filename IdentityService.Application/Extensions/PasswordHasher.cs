@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using DotNetEnv;
-using IdentityService.Domain.Interfaces.Extantions;
+using IdentityService.Domain.Interfaces.Extensions;
 using Konscious.Security.Cryptography;
 
-namespace IdentityService.Application.Extantions;
+namespace IdentityService.Application.Extensions;
 
 public class PasswordHasher : IPasswordHasher
 {
@@ -34,8 +34,8 @@ public class PasswordHasher : IPasswordHasher
     public async Task<bool> VerifyPasswordAsync(string password, string hash)
     {
         var salt = Convert.FromBase64String(hash.Split(':').Last());
-        
-        var passwordHash =  await HashPasswordAsync(password, salt);
+
+        var passwordHash = await HashPasswordAsync(password, salt);
 
         return hash == passwordHash;
     }

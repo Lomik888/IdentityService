@@ -1,6 +1,6 @@
 ﻿using IdentityService.Application.Resources;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Extantions;
+using IdentityService.Domain.Interfaces.Extensions;
 using IdentityService.Domain.Interfaces.Repositories;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result.TokenResult;

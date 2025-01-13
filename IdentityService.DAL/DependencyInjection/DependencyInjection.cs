@@ -13,9 +13,10 @@ public static class DependencyInjection
     {
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(Env.GetString("POSTGRESQL_CONNECTIONSTRING"), p => p.MigrationsAssembly("IdentityService.API"));
+            options.UseNpgsql(Env.GetString("POSTGRESQL_CONNECTIONSTRING"),
+                p => p.MigrationsAssembly("IdentityService.API"));
         });
-        
+
         services.InitRepositories();
     }
 

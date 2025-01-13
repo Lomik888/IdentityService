@@ -1,6 +1,7 @@
 ﻿using IdentityService.Domain.Dto.UserDto;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result;
+using IdentityService.Domain.Result.UserResult;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,8 @@ namespace IdentityService.API.Controllers;
 [ApiController]
 public class IdentityController : ControllerBase
 {
+    #region DI and ctor
+
     private readonly IIdentityService _identityService;
 
     public IdentityController(IIdentityService identityService)
@@ -18,15 +21,31 @@ public class IdentityController : ControllerBase
         _identityService = identityService;
     }
 
+    #endregion
+
     [HttpPost("registration")]
-    public async Task<ActionResult<BaseResult>> Registration([FromBody] UserRegistrationDto userRegistrationDto)
+    public async Task<ActionResult<BaseResult>> RegistrationAsync([FromBody] UserRegistrationDto userRegistrationDto)
     {
-        return Ok(await _identityService.RegistrationUserByRegistrationDtoAsync(userRegistrationDto));
+        var resonse = await _identityService.RegistrationUserByRegistrationDtoAsync(userRegistrationDto);
+
+        if (resonse.IsSuccess)
+        {
+            return Ok(resonse);
+        }
+
+        return BadRequest(resonse);
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<DataBaseResult<LoginResult>>> Login([FromBody] UserLoginDto userLoginDto)
+    public async Task<ActionResult<DataBaseResult<LoginResult>>> LoginAsync([FromBody] UserLoginDto userLoginDto)
     {
-        return Ok(await _identityService.LoginUserAsync(userLoginDto.Email, userLoginDto.Password));
+        var resonse = await _identityService.LoginUserAsync(userLoginDto.Email, userLoginDto.Password);
+
+        if (resonse.IsSuccess)
+        {
+            return Ok(resonse);
+        }
+
+        return BadRequest(resonse);
     }
 }

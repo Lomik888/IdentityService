@@ -25,11 +25,12 @@ public class UserRepository : IUserRepository
 
     public void RemoveByEntity(User entity)
     {
-       _dbContext.Remove(entity);
+        _dbContext.Remove(entity);
     }
 
     public void UpdateByEntity(User entity)
     {
+        _dbContext.Entry(entity).Property(x => x.Email).IsModified = false;
         _dbContext.Update(entity);
     }
 

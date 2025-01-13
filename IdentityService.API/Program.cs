@@ -1,31 +1,10 @@
 using DotNetEnv;
-using IdentityService.Application.DependencyInjection;
-using IdentityService.DAL.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using IdentityService.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-        };
-    });
-builder.Services.AddAuthorization();
-
-builder.Services.AddApplicationLayer();
-builder.Services.AddDataAccessLayer();
-
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+builder.Services.ConfigureServices();
 
 var app = builder.Build();
 
@@ -34,6 +13,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();

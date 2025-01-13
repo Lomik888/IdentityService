@@ -10,8 +10,8 @@ public class MappingProfile : Profile
     {
         CreateMap<UserRegistrationDto, User>()
             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => new Password()));
-        
+
         CreateMap<UserModifiedDto, User>()
-            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null)); 
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
     }
 }

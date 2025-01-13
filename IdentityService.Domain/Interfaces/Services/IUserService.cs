@@ -7,7 +7,7 @@ public interface IUserService
 {
     Task<CollectionBaseResult<List<UserDto>>> GetAllUsersAsync();
 
-    Task<BaseResult> RemoveUserByUserIdAsync(long userId);
+    Task<BaseResult> RemoveUserByUserIdAsync(string accessToken);
 
-    Task<BaseResult> ModifiedUserAsync(UserModifiedDto userModifiedDto, long userId);
+    Task<BaseResult> ModifiedUserAsync(UserModifiedDto userModifiedDto, string accessToken);
 }

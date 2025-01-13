@@ -2,10 +2,11 @@ using AutoMapper;
 using IdentityService.Application.Resources;
 using IdentityService.Domain.Dto.UserDto;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Extantions;
+using IdentityService.Domain.Interfaces.Extensions;
 using IdentityService.Domain.Interfaces.Repositories;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result;
+using IdentityService.Domain.Result.UserResult;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,8 @@ namespace IdentityService.Application.Services;
 
 public class IdentityService : IIdentityService
 {
+    #region DI and ctor
+
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository<RefreshToken> _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
@@ -29,6 +32,8 @@ public class IdentityService : IIdentityService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
+    #endregion
+
     public async Task<BaseResult> RegistrationUserByRegistrationDtoAsync(UserRegistrationDto userRegistrationDto)
     {
         var emailExist = await _userRepository.GetAll()
@@ -44,7 +49,6 @@ public class IdentityService : IIdentityService
         }
 
         var newUser = _mapper.Map<User>(userRegistrationDto);
-
         newUser.Password.PasswordHash = await _passwordHasher.HashPasswordAsync(userRegistrationDto.Password);
 
         await _userRepository.AddByEntityAsync(newUser);
@@ -89,7 +93,7 @@ public class IdentityService : IIdentityService
 
         await _refreshTokenRepository.AddByEntityAsync(refreshToken);
         await _refreshTokenRepository.SaveChangesAsync();
-        
+
         return new DataBaseResult<LoginResult>()
         {
             Data = new LoginResult()
