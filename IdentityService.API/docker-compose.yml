@@ -1,0 +1,30 @@
+version: "3.8"
+networks:
+    server-network:
+        driver: bridge
+services:   
+    app:
+        container_name: identity_server
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "5000:5000"
+        networks:
+            - server-network
+        depends_on:
+            - postrges_db
+    localhost:
+        container_name: postgres
+        image: postgres
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+        ports:
+            - "5432:5432"
+        networks:
+            - server-network
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+volumes:
+    postgres-data: 

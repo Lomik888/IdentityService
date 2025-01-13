@@ -1,12 +1,13 @@
-using System.Security.Principal;
-using IdentityService.Domain.Dto.UserDto;
+﻿using IdentityService.Domain.Dto.UserDto;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityService.API.Controllers;
 
-[Route("api/")]
+[AllowAnonymous]
+[Route("/api/[controller]/")]
 [ApiController]
 public class IdentityController : ControllerBase
 {
@@ -18,8 +19,14 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("registration")]
-    public async Task<ActionResult<BaseResult>> RegistrationByDto([FromBody]RegistrationDto registerDto)
+    public async Task<ActionResult<BaseResult>> Registration([FromBody] UserRegistrationDto userRegistrationDto)
     {
-        return Ok(await _identityService.RegistrationUserAsync(registerDto));
+        return Ok(await _identityService.RegistrationUserByRegistrationDtoAsync(userRegistrationDto));
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<DataBaseResult<LoginResult>>> Login([FromBody] UserLoginDto userLoginDto)
+    {
+        return Ok(await _identityService.LoginUserAsync(userLoginDto.Email, userLoginDto.Password));
     }
 }

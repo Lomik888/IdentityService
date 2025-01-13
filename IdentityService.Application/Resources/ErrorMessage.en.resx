@@ -14,7 +14,16 @@
     <data name="EmailAlreadyExist" xml:space="preserve">
         <value>Email already exist</value>
     </data>
-    <data name="PasswordUnavailable" xml:space="preserve">
-        <value>Password unavailable</value>
+    <data name="EmailNotExist" xml:space="preserve">
+        <value>Email not exist</value>
+    </data>
+    <data name="InvalidPassword" xml:space="preserve">
+        <value>Invalid password</value>
+    </data>
+    <data name="UserNotExist" xml:space="preserve">
+        <value>User not exist</value>
+    </data>
+    <data name="InvalidRefreshToken" xml:space="preserve">
+        <value>Invalid refresh token</value>
     </data>
 </root>

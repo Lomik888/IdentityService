@@ -8,7 +8,11 @@ public class RefreshToken : IEntityId<long>
     
     public string Token { get; set; }
     
-    public ulong UserId { get; set; }
+    public bool IsActive { get; set; }
+    
+    public DateTime Expires { get; set; }
+    
+    public long UserId { get; set; }
     
     public User User { get; set; }
 }

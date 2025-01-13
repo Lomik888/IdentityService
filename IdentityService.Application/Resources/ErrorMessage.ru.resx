@@ -14,7 +14,16 @@
     <data name="EmailAlreadyExist" xml:space="preserve">
         <value>Такой Email уже существует</value>
     </data>
-    <data name="PasswordUnavailable" xml:space="preserve">
+    <data name="InvalidPassword" xml:space="preserve">
         <value>Неверный пароль</value>
+    </data>
+    <data name="EmailNotExist" xml:space="preserve">
+        <value>Такого Email нет</value>
+    </data>
+    <data name="UserNotExist" xml:space="preserve">
+        <value>Такого user нет</value>
+    </data>
+    <data name="InvalidRefreshToken" xml:space="preserve">
+        <value>Недопустимый токен обновления</value>
     </data>
 </root>

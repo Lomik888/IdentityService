@@ -33,7 +33,7 @@ public class PasswordHasher : IPasswordHasher
 
     public async Task<bool> VerifyPasswordAsync(string password, string hash)
     {
-        var salt = Encoding.UTF8.GetBytes(hash.Split(':').First());
+        var salt = Convert.FromBase64String(hash.Split(':').Last());
         
         var passwordHash =  await HashPasswordAsync(password, salt);
 

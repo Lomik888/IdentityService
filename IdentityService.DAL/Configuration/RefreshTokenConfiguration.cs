@@ -10,5 +10,6 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
         builder.Property(x => x.Token).IsRequired();
+        builder.Property(x => x.IsActive).IsRequired();
     }
 }

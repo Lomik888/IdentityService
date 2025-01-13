@@ -1,8 +1,10 @@
+using IdentityService.Domain.Entities;
+
 namespace IdentityService.Domain.Interfaces.Extantions;
 
 public interface IJwtGenerator
 {
-    string GetAccessTokenAsync(string userId);
+    string GetAccessToken(long userId);
 
-    string GetRefreshTokenAsync();
+    RefreshToken GetRefreshToken();
 }

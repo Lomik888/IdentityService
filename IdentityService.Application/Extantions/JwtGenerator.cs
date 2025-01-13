@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using DotNetEnv;
+using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Extantions;
 using Microsoft.IdentityModel.Tokens;
 
@@ -10,11 +11,11 @@ namespace IdentityService.Application.Extantions;
 
 public class JwtGenerator : IJwtGenerator
 {
-    public string GetAccessTokenAsync(string userId)
+    public string GetAccessToken(long userId)
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
         };
 
         var jwt = new JwtSecurityToken(
@@ -29,11 +30,16 @@ public class JwtGenerator : IJwtGenerator
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
-    public string GetRefreshTokenAsync()
+    public RefreshToken GetRefreshToken()
     {
-        return Convert.ToBase64String(GenerateSalt());
+        return new RefreshToken()
+        {
+            Token = Convert.ToBase64String(GenerateSalt()),
+            IsActive = true,
+            Expires = DateTime.UtcNow.AddDays(30)
+        };
     }
-    
+
     private byte[] GenerateSalt()
     {
         var salt = new byte[32];

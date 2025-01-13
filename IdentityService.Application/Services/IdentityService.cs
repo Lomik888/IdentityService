@@ -13,25 +13,28 @@ namespace IdentityService.Application.Services;
 
 public class IdentityService : IIdentityService
 {
-    private readonly IRegistrationRepository<User> _userRepository;
-    private readonly IMapper _mapper;
+    private readonly IUserRepository _userRepository;
+    private readonly IRefreshTokenRepository<RefreshToken> _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtGenerator _jwtGenerator;
+    private readonly IMapper _mapper;
 
-    public IdentityService(IRegistrationRepository<User> userRepository, IMapper mapper, IPasswordHasher passwordHasher,
-        IJwtGenerator jwtGenerator)
+    public IdentityService(IUserRepository userRepository, IPasswordHasher passwordHasher,
+        IJwtGenerator jwtGenerator, IMapper mapper, IRefreshTokenRepository<RefreshToken> refreshTokenRepository)
     {
         _userRepository = userRepository;
-        _mapper = mapper;
         _passwordHasher = passwordHasher;
         _jwtGenerator = jwtGenerator;
+        _mapper = mapper;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<BaseResult> RegistrationUserAsync(RegistrationDto registrationDto)
+    public async Task<BaseResult> RegistrationUserByRegistrationDtoAsync(UserRegistrationDto userRegistrationDto)
     {
-        var emailResult = await _userRepository.GetAll().AnyAsync(x => x.Email == registrationDto.Email);
+        var emailExist = await _userRepository.GetAll()
+            .AnyAsync(x => x.Email == userRegistrationDto.Email);
 
-        if (emailResult)
+        if (emailExist)
         {
             return new BaseResult()
             {
@@ -40,48 +43,61 @@ public class IdentityService : IIdentityService
             };
         }
 
-        var user = new User()
-        {
-            FirstName = registrationDto.FirstName,
-            LastName = registrationDto.LastName,
-            Email = registrationDto.Email,
-            Password = new Password()
-            {
-                PasswordHash = await _passwordHasher.HashPasswordAsync(registrationDto.Password)
-            },
-        };
+        var newUser = _mapper.Map<User>(userRegistrationDto);
 
-        await _userRepository.AddByEntityAsync(user);
+        newUser.Password.PasswordHash = await _passwordHasher.HashPasswordAsync(userRegistrationDto.Password);
+
+        await _userRepository.AddByEntityAsync(newUser);
         await _userRepository.SaveChangesAsync();
 
-        return new BaseResult();
+        return new BaseResult()
+        {
+            StatusCode = StatusCodes.Status201Created
+        };
     }
 
-    public async Task<DataBaseResult<LoginResult>> LoginUserAsync(LoginDto loginDto, string accessToken)
+
+    public async Task<DataBaseResult<LoginResult>> LoginUserAsync(string email, string password)
     {
         var user = await _userRepository.GetAll()
-            .Where(x => x.Email == loginDto.Email)
+            .AsNoTracking()
+            .Where(x => x.Email == email)
             .Include(x => x.Password)
             .Select(x => new { x.Id, x.Password.PasswordHash })
-            .SingleAsync();
+            .SingleOrDefaultAsync();
 
-        var refreshToken = _jwtGenerator.GetRefreshTokenAsync();
-        
-        
-        
-        if (await _passwordHasher.VerifyPasswordAsync(loginDto.Password, user.PasswordHash))
+        if (user == null)
         {
             return new DataBaseResult<LoginResult>()
             {
-                Data = new LoginResult(_jwtGenerator.GetAccessTokenAsync(user.Id.ToString()), refreshToken
-                    )
+                ErrorMessage = ErrorMessage.EmailNotExist,
+                StatusCode = StatusCodes.Status400BadRequest
             };
         }
+
+        if (!await _passwordHasher.VerifyPasswordAsync(password, user.PasswordHash))
+        {
+            return new DataBaseResult<LoginResult>()
+            {
+                ErrorMessage = ErrorMessage.InvalidPassword,
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
+        var refreshToken = _jwtGenerator.GetRefreshToken();
+        refreshToken.UserId = user.Id;
+
+        await _refreshTokenRepository.AddByEntityAsync(refreshToken);
+        await _refreshTokenRepository.SaveChangesAsync();
         
         return new DataBaseResult<LoginResult>()
         {
-            ErrorMessage = ErrorMessage.PasswordUnavailable,
-            StatusCode = StatusCodes.Status400BadRequest
+            Data = new LoginResult()
+            {
+                AccessToken = _jwtGenerator.GetAccessToken(user.Id),
+                RefreshToken = refreshToken.Token,
+                StatusCode = StatusCodes.Status200OK
+            }
         };
     }
 }

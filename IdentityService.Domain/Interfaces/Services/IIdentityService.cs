@@ -5,7 +5,7 @@ namespace IdentityService.Domain.Interfaces.Services;
 
 public interface IIdentityService
 {
-    Task<BaseResult> RegistrationUserAsync(RegistrationDto registrationDto);
+    Task<BaseResult> RegistrationUserByRegistrationDtoAsync(UserRegistrationDto userRegistrationDto);
     
-    Task<DataBaseResult<LoginResult>> LoginUserAsync(LoginDto loginDto, string accessToken);
+    Task<DataBaseResult<LoginResult>> LoginUserAsync(string email, string password);
 }
