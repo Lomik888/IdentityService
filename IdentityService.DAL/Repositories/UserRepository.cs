@@ -1,16 +1,20 @@
+using System.Text;
+using Dapper;
+using IdentityService.DAL.Extensions;
 using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace IdentityService.DAL.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository : IUserRepository<User>
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly DapperDbContext _dapperDbContext;
 
-    public UserRepository(ApplicationDbContext dbContext)
+    public UserRepository(ApplicationDbContext dbContext, DapperDbContext dapperDbContext)
     {
         _dbContext = dbContext;
+        _dapperDbContext = dapperDbContext;
     }
 
     public IQueryable<User> GetAll()
@@ -23,34 +27,41 @@ public class UserRepository : IUserRepository
         await _dbContext.AddAsync(entity);
     }
 
-    public void RemoveByEntity(User entity)
-    {
-        _dbContext.Remove(entity);
-    }
-
-    public void UpdateByEntity(User entity)
-    {
-        _dbContext.Entry(entity).Property(x => x.Email).IsModified = false;
-        _dbContext.Update(entity);
-    }
-
     public async Task SaveChangesAsync()
     {
         await _dbContext.SaveChangesAsync();
     }
 
-    public void RemoveUserById(long userId)
+    public async Task RemoveUserByIdAsync(long userId)
     {
-        var user = new User() { Id = userId };
-        _dbContext.Attach(user);
-        _dbContext.Entry(user).State = EntityState.Deleted;
-        _dbContext.Remove(user);
+        var parameter = new { Id = userId };
+
+        var query = "DELETE FROM public.\"Users\" WHERE \"Id\" = @Id";
+
+        using (var connection = _dapperDbContext.CreateConnection())
+        {
+            await connection.QueryAsync(query, parameter);
+        }
     }
 
-    public void UpdateByEntityAttach(User user)
+    public async Task UpdateByEntityAsync(User user)
     {
-        _dbContext.Attach(user);
-        _dbContext.Entry(user).State = EntityState.Modified;
-        _dbContext.Update(user);
+        var queryBuilder = new StringBuilder("UPDATE public.\"Users\" SET ");
+        var parameters = new DynamicParameters();
+        var listPropertyNames = parameters.GetDynamicParameters(user);
+        listPropertyNames.Remove("Id");
+
+        foreach (var l in listPropertyNames)
+        {
+            queryBuilder.Append($"\"{l}\" = @{l}, ");
+        }
+
+        queryBuilder.Length -= 2;
+        queryBuilder.Append($" WHERE \"Id\" = @Id");
+
+        using (var connection = _dapperDbContext.CreateConnection())
+        {
+            await connection.QueryAsync(queryBuilder.ToString(), parameters);
+        }
     }
 }

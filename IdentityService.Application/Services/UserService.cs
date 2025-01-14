@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using IdentityService.Application.Resources;
 using IdentityService.Domain.Dto.UserDto;
+using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Extensions;
 using IdentityService.Domain.Interfaces.Repositories;
 using IdentityService.Domain.Interfaces.Services;
@@ -14,15 +15,17 @@ public class UserService : IUserService
 {
     #region DI ctor
 
-    private readonly IUserRepository _userRepository;
+    private readonly IUserRepository<User> _userRepository;
+    private readonly IUserRedisRepository _userRedisRepository;
     private readonly IJwtGenerator _jwtGenerator;
     private readonly IMapper _mapper;
 
-    public UserService(IUserRepository userRepository, IMapper mapper, IJwtGenerator jwtGenerator)
+    public UserService(IUserRepository<User> userRepository, IMapper mapper, IJwtGenerator jwtGenerator, IUserRedisRepository userRedisRepository)
     {
         _userRepository = userRepository;
         _mapper = mapper;
         _jwtGenerator = jwtGenerator;
+        _userRedisRepository = userRedisRepository;
     }
 
     #endregion
@@ -34,6 +37,8 @@ public class UserService : IUserService
             .Select(x => new UserDto(x.FirstName, x.LastName))
             .ToListAsync();
 
+        _userRedisRepository.AddUsersAsync(users.First());
+        
         return new CollectionBaseResult<List<UserDto>>()
         {
             Data = users,
@@ -44,10 +49,10 @@ public class UserService : IUserService
 
     public async Task<BaseResult> RemoveUserByUserIdAsync(string accessToken)
     {
-        var userId = _jwtGenerator.GetIdFromAccessToken(accessToken);
+        var userId = Convert.ToInt64(_jwtGenerator.GetIdFromAccessToken(accessToken));
 
         var userExist = await _userRepository.GetAll()
-            .AnyAsync(x => x.Id.ToString() == userId);
+            .AnyAsync(x => x.Id == userId);
 
         if (!userExist)
         {
@@ -58,8 +63,7 @@ public class UserService : IUserService
             };
         }
 
-        _userRepository.RemoveUserById(Convert.ToInt64(userId));
-        await _userRepository.SaveChangesAsync();
+        await _userRepository.RemoveUserByIdAsync(userId);
 
         return new BaseResult()
         {
@@ -69,14 +73,24 @@ public class UserService : IUserService
 
     public async Task<BaseResult> ModifiedUserAsync(UserModifiedDto userModifiedDto, string accessToken)
     {
-        var userId = _jwtGenerator.GetIdFromAccessToken(accessToken);
-        
-        var user = await _userRepository.GetAll().SingleAsync(x => x.Id.ToString() == userId);
+        var userId = Convert.ToInt64(_jwtGenerator.GetIdFromAccessToken(accessToken));
 
-        _mapper.Map(userModifiedDto, user);
+        var userExist = await _userRepository.GetAll()
+            .AnyAsync(x => x.Id == userId);
 
-        _userRepository.UpdateByEntityAttach(user);
-        await _userRepository.SaveChangesAsync();
+        if (!userExist)
+        {
+            return new BaseResult()
+            {
+                ErrorMessage = ErrorMessage.UserNotExist,
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }
+
+        var user = _mapper.Map<User>(userModifiedDto);
+        user.Id = userId;
+
+        await _userRepository.UpdateByEntityAsync(user);
 
         return new BaseResult()
         {

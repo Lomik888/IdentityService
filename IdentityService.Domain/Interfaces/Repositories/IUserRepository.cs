@@ -1,10 +1,14 @@
-﻿using IdentityService.Domain.Entities;
+﻿namespace IdentityService.Domain.Interfaces.Repositories;
 
-namespace IdentityService.Domain.Interfaces.Repositories;
-
-public interface IUserRepository : IBaseRepository<User>
+public interface IUserRepository<TEntity>
 {
-    void RemoveUserById(long userId);
+    IQueryable<TEntity> GetAll();
 
-    void UpdateByEntityAttach(User user);
+    Task AddByEntityAsync(TEntity entity);
+
+    Task SaveChangesAsync();
+
+    Task RemoveUserByIdAsync(long userId);
+
+    Task UpdateByEntityAsync(TEntity user);
 }

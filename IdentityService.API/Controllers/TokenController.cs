@@ -21,9 +21,12 @@ public class TokenController : ControllerBase
 
     #endregion
 
+
+    [HttpGet("accessToken")]
     public async Task<ActionResult<UpdateTokensResult>> RefreshAccessTokenAsync()
     {
-        var response = await _jwtTokenService.UpdateJwtTokens(HttpContext.Request.Headers.Authorization.ToString());
+        var response =
+            await _jwtTokenService.UpdateJwtTokensAsync(HttpContext.Request.Headers.Authorization.ToString());
 
         if (response.IsSuccess)
         {

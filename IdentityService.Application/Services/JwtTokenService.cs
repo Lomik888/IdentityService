@@ -11,6 +11,8 @@ namespace IdentityService.Application.Services;
 
 public class JwtTokenService : IJwtTokenService
 {
+    #region DI and ctor
+
     private readonly IRefreshTokenRepository<RefreshToken> _refreshTokenRepository;
     private readonly IJwtGenerator _jwtGenerator;
 
@@ -20,14 +22,18 @@ public class JwtTokenService : IJwtTokenService
         _jwtGenerator = jwtGenerator;
     }
 
-    public async Task<UpdateTokensResult> UpdateJwtTokens(string refreshToken)
+    #endregion
+
+    public async Task<UpdateTokensResult> UpdateJwtTokensAsync(string accessToken)
     {
-        var refreshTokenData = await _refreshTokenRepository.GetAll()
-            .Where(x => x.Token == refreshToken && x.IsActive == true && x.Expires > DateTime.UtcNow)
-            .Select(x => new { x.UserId })
+        var userId = Convert.ToInt64(_jwtGenerator.GetIdFromAccessToken(accessToken));
+
+        var refreshTokenId = await _refreshTokenRepository.GetAll()
+            .Where(x => x.UserId == userId && x.IsActive == true && x.Expires > DateTime.UtcNow)
+            .Select(x => new { x.Id })
             .SingleOrDefaultAsync();
 
-        if (refreshTokenData == null)
+        if (refreshTokenId == null)
         {
             return new UpdateTokensResult()
             {
@@ -37,16 +43,12 @@ public class JwtTokenService : IJwtTokenService
         }
 
         var newRefreshToken = _jwtGenerator.GetRefreshToken();
-        newRefreshToken.UserId = refreshTokenData.UserId;
+        newRefreshToken.UserId = userId;
 
-        var newAccessToken = _jwtGenerator.GetAccessToken(refreshTokenData.UserId);
-        
+        var newAccessToken = _jwtGenerator.GetAccessToken(userId);
+
+        await _refreshTokenRepository.UpdateRefreshTokenActive(refreshTokenId.Id, false);
         await _refreshTokenRepository.AddByEntityAsync(newRefreshToken);
-        _refreshTokenRepository.UpdateByEntityAttach(new RefreshToken()
-        {
-            Id = newRefreshToken.Id,
-            IsActive = false
-        });
         await _refreshTokenRepository.SaveChangesAsync();
 
         return new UpdateTokensResult()

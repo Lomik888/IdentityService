@@ -1,16 +1,18 @@
-﻿using IdentityService.Domain.Entities;
+﻿using Dapper;
+using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace IdentityService.DAL.Repositories;
 
 public class RefreshTokenRepository : IRefreshTokenRepository<RefreshToken>
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly DapperDbContext _dapperDbContext;
 
-    public RefreshTokenRepository(ApplicationDbContext dbContext)
+    public RefreshTokenRepository(ApplicationDbContext dbContext, DapperDbContext dapperDbContext)
     {
         _dbContext = dbContext;
+        _dapperDbContext = dapperDbContext;
     }
 
     public IQueryable<RefreshToken> GetAll()
@@ -23,11 +25,20 @@ public class RefreshTokenRepository : IRefreshTokenRepository<RefreshToken>
         await _dbContext.AddAsync(entity);
     }
 
-    public void UpdateByEntityAttach(RefreshToken entity)
+    public async Task UpdateRefreshTokenActive(long id, bool isActive)
     {
-        _dbContext.Attach(entity);
-        _dbContext.Entry(entity).State = EntityState.Modified;
-        _dbContext.Update(entity);
+        var parameters = new
+        {
+            Id = id,
+            IsActive = isActive
+        };
+
+        var query = "UPDATE public.\"RefreshTokens\" SET \"IsActive\" = @IsActive WHERE \"Id\" = @Id";
+
+        using (var connection = _dapperDbContext.CreateConnection())
+        {
+            await connection.QueryAsync(query, parameters);
+        }
     }
 
     public async Task SaveChangesAsync()

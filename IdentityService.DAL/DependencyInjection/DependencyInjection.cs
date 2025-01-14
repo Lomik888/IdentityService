@@ -11,6 +11,9 @@ public static class DependencyInjection
 {
     public static void AddDataAccessLayer(this IServiceCollection services)
     {
+        services.AddSingleton<DapperDbContext>();
+        services.AddSingleton<RedisContext>();
+
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(Env.GetString("POSTGRESQL_CONNECTIONSTRING"),
@@ -22,7 +25,8 @@ public static class DependencyInjection
 
     private static void InitRepositories(this IServiceCollection services)
     {
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserRedisRepository, UserRedisRepository>();
+        services.AddScoped<IUserRepository<User>, UserRepository>();
         services.AddScoped<IRefreshTokenRepository<RefreshToken>, RefreshTokenRepository>();
     }
 }

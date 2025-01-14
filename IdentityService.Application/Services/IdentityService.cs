@@ -16,13 +16,13 @@ public class IdentityService : IIdentityService
 {
     #region DI and ctor
 
-    private readonly IUserRepository _userRepository;
+    private readonly IUserRepository<User> _userRepository;
     private readonly IRefreshTokenRepository<RefreshToken> _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtGenerator _jwtGenerator;
     private readonly IMapper _mapper;
 
-    public IdentityService(IUserRepository userRepository, IPasswordHasher passwordHasher,
+    public IdentityService(IUserRepository<User> userRepository, IPasswordHasher passwordHasher,
         IJwtGenerator jwtGenerator, IMapper mapper, IRefreshTokenRepository<RefreshToken> refreshTokenRepository)
     {
         _userRepository = userRepository;

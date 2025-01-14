@@ -4,5 +4,5 @@ namespace IdentityService.Domain.Interfaces.Services;
 
 public interface IJwtTokenService
 {
-    Task<UpdateTokensResult> UpdateJwtTokens(string accessToken);
+    Task<UpdateTokensResult> UpdateJwtTokensAsync(string accessToken);
 }

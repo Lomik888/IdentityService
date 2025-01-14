@@ -6,7 +6,7 @@ public interface IRefreshTokenRepository<TEntity>
 
     Task AddByEntityAsync(TEntity entity);
 
-    void UpdateByEntityAttach(TEntity entity);
+    Task UpdateRefreshTokenActive(long refreshTokenId, bool isActive);
 
     Task SaveChangesAsync();
 }
