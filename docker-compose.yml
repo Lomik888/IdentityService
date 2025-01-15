@@ -4,3 +4,9 @@
     build:
       context: .
       dockerfile: IdentityService.API/Dockerfile
+
+  identityservice.api-1:
+    image: identityservice.api-1
+    build:
+      context: .
+      dockerfile: IdentityService.API/Dockerfile
