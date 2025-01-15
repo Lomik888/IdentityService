@@ -1,7 +1,10 @@
 using DotNetEnv;
 using IdentityService.DAL.Repositories;
+using IdentityService.DAL.Repositories.RedisRepositories;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Repositories;
+using IdentityService.Domain.Interfaces.Repositories.AccessTokenRepository;
+using IdentityService.Domain.Interfaces.Repositories.RefreshTokenRepository;
+using IdentityService.Domain.Interfaces.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +28,8 @@ public static class DependencyInjection
 
     private static void InitRepositories(this IServiceCollection services)
     {
+        //services.AddScoped<IBaseRepository<TEntity>, BaseRepository<TEntity>>();
+        services.AddScoped<IAccessTokenBlackListRedisRepository, AccessTokenBlackListRedisRepository>();
         services.AddScoped<IUserRedisRepository, UserRedisRepository>();
         services.AddScoped<IUserRepository<User>, UserRepository>();
         services.AddScoped<IRefreshTokenRepository<RefreshToken>, RefreshTokenRepository>();

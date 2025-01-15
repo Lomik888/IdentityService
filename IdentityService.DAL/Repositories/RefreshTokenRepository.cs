@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Repositories;
+using IdentityService.Domain.Interfaces.Repositories.RefreshTokenRepository;
 
 namespace IdentityService.DAL.Repositories;
 
@@ -25,7 +25,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository<RefreshToken>
         await _dbContext.AddAsync(entity);
     }
 
-    public async Task UpdateRefreshTokenActive(long id, bool isActive)
+    public async Task DapperUpdateRefreshTokenActive(long id, bool isActive)
     {
         var parameters = new
         {

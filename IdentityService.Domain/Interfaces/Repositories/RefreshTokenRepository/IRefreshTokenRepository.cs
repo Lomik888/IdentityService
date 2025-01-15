@@ -1,4 +1,4 @@
-﻿namespace IdentityService.Domain.Interfaces.Repositories;
+﻿namespace IdentityService.Domain.Interfaces.Repositories.RefreshTokenRepository;
 
 public interface IRefreshTokenRepository<TEntity>
 {
@@ -6,7 +6,7 @@ public interface IRefreshTokenRepository<TEntity>
 
     Task AddByEntityAsync(TEntity entity);
 
-    Task UpdateRefreshTokenActive(long refreshTokenId, bool isActive);
+    Task DapperUpdateRefreshTokenActive(long refreshTokenId, bool isActive);
 
     Task SaveChangesAsync();
 }

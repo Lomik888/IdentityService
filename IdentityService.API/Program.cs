@@ -1,5 +1,6 @@
 using DotNetEnv;
 using IdentityService.API;
+using IdentityService.API.Middlewear;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseExceptionHandler();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseExceptionHandler("/Error");
 
 app.Run();

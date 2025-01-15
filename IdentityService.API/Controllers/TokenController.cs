@@ -21,7 +21,6 @@ public class TokenController : ControllerBase
 
     #endregion
 
-
     [HttpGet("accessToken")]
     public async Task<ActionResult<UpdateTokensResult>> RefreshAccessTokenAsync()
     {

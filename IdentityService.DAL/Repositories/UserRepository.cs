@@ -2,7 +2,7 @@ using System.Text;
 using Dapper;
 using IdentityService.DAL.Extensions;
 using IdentityService.Domain.Entities;
-using IdentityService.Domain.Interfaces.Repositories;
+using IdentityService.Domain.Interfaces.Repositories.UserRepository;
 
 namespace IdentityService.DAL.Repositories;
 
@@ -32,7 +32,7 @@ public class UserRepository : IUserRepository<User>
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task RemoveUserByIdAsync(long userId)
+    public async Task DapperRemoveUserByIdAsync(long userId)
     {
         var parameter = new { Id = userId };
 
@@ -44,7 +44,7 @@ public class UserRepository : IUserRepository<User>
         }
     }
 
-    public async Task UpdateByEntityAsync(User user)
+    public async Task DapperUpdateByEntityAsync(User user)
     {
         var queryBuilder = new StringBuilder("UPDATE public.\"Users\" SET ");
         var parameters = new DynamicParameters();

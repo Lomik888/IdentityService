@@ -12,4 +12,6 @@ public interface IJwtGenerator
     public IEnumerable<Claim> GetClaimsFromAccessToken(string accessToken);
 
     public string GetIdFromAccessToken(string accessToken);
+
+    long GetExpireTimeSecondsAccessToken(string accessToken);
 }

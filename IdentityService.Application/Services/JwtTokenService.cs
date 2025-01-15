@@ -1,7 +1,8 @@
 ﻿using IdentityService.Application.Resources;
 using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Extensions;
-using IdentityService.Domain.Interfaces.Repositories;
+using IdentityService.Domain.Interfaces.Repositories.AccessTokenRepository;
+using IdentityService.Domain.Interfaces.Repositories.RefreshTokenRepository;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result.TokenResult;
 using Microsoft.AspNetCore.Http;
@@ -14,12 +15,15 @@ public class JwtTokenService : IJwtTokenService
     #region DI and ctor
 
     private readonly IRefreshTokenRepository<RefreshToken> _refreshTokenRepository;
+    private readonly IAccessTokenBlackListRedisRepository _accessTokenBlackListRedisRepository;
     private readonly IJwtGenerator _jwtGenerator;
 
-    public JwtTokenService(IRefreshTokenRepository<RefreshToken> refreshTokenRepository, IJwtGenerator jwtGenerator)
+    public JwtTokenService(IRefreshTokenRepository<RefreshToken> refreshTokenRepository, IJwtGenerator jwtGenerator,
+        IAccessTokenBlackListRedisRepository accessTokenBlackListRedisRepository)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _jwtGenerator = jwtGenerator;
+        _accessTokenBlackListRedisRepository = accessTokenBlackListRedisRepository;
     }
 
     #endregion
@@ -44,10 +48,14 @@ public class JwtTokenService : IJwtTokenService
 
         var newRefreshToken = _jwtGenerator.GetRefreshToken();
         newRefreshToken.UserId = userId;
-
         var newAccessToken = _jwtGenerator.GetAccessToken(userId);
 
-        await _refreshTokenRepository.UpdateRefreshTokenActive(refreshTokenId.Id, false);
+        var oldAccessTokenJti = _jwtGenerator.GetClaimsFromAccessToken(accessToken)
+            .Single(x => x.Type == "Jti").Value;
+        var oldAccessTokenExpire = _jwtGenerator.GetExpireTimeSecondsAccessToken(accessToken);
+
+        await _accessTokenBlackListRedisRepository.AddTokenToBlackListAsync(oldAccessTokenJti, oldAccessTokenExpire);
+        await _refreshTokenRepository.DapperUpdateRefreshTokenActive(refreshTokenId.Id, false);
         await _refreshTokenRepository.AddByEntityAsync(newRefreshToken);
         await _refreshTokenRepository.SaveChangesAsync();
 

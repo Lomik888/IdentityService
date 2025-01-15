@@ -3,7 +3,7 @@ using IdentityService.Application.Resources;
 using IdentityService.Domain.Dto.UserDto;
 using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Extensions;
-using IdentityService.Domain.Interfaces.Repositories;
+using IdentityService.Domain.Interfaces.Repositories.UserRepository;
 using IdentityService.Domain.Interfaces.Services;
 using IdentityService.Domain.Result;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +20,8 @@ public class UserService : IUserService
     private readonly IJwtGenerator _jwtGenerator;
     private readonly IMapper _mapper;
 
-    public UserService(IUserRepository<User> userRepository, IMapper mapper, IJwtGenerator jwtGenerator, IUserRedisRepository userRedisRepository)
+    public UserService(IUserRepository<User> userRepository, IMapper mapper, IJwtGenerator jwtGenerator,
+        IUserRedisRepository userRedisRepository)
     {
         _userRepository = userRepository;
         _mapper = mapper;
@@ -37,8 +38,6 @@ public class UserService : IUserService
             .Select(x => new UserDto(x.FirstName, x.LastName))
             .ToListAsync();
 
-        _userRedisRepository.AddUsersAsync(users.First());
-        
         return new CollectionBaseResult<List<UserDto>>()
         {
             Data = users,
@@ -63,7 +62,7 @@ public class UserService : IUserService
             };
         }
 
-        await _userRepository.RemoveUserByIdAsync(userId);
+        await _userRepository.DapperRemoveUserByIdAsync(userId);
 
         return new BaseResult()
         {
@@ -90,7 +89,7 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(userModifiedDto);
         user.Id = userId;
 
-        await _userRepository.UpdateByEntityAsync(user);
+        await _userRepository.DapperUpdateByEntityAsync(user);
 
         return new BaseResult()
         {

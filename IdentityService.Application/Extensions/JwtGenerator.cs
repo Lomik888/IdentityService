@@ -16,6 +16,7 @@ public class JwtGenerator : IJwtGenerator
         var claims = new List<Claim>
         {
             new Claim("Id", userId.ToString()),
+            new Claim("Jti", Guid.NewGuid().ToString()),
         };
 
         var jwt = new JwtSecurityToken(
@@ -36,6 +37,14 @@ public class JwtGenerator : IJwtGenerator
         var jwtToken = jwtHandler.ReadJwtToken(accessToken.Split(' ').Last());
         var claims = jwtToken.Claims;
         return claims;
+    }
+
+    public long GetExpireTimeSecondsAccessToken(string accessToken)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var jwtToken = jwtHandler.ReadJwtToken(accessToken.Split(' ').Last());
+        var timeSeconds = jwtToken.Payload.Expiration!.Value;
+        return timeSeconds;
     }
 
     public string GetIdFromAccessToken(string accessToken)
