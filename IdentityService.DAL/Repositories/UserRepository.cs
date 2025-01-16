@@ -3,6 +3,8 @@ using Dapper;
 using IdentityService.DAL.Extensions;
 using IdentityService.Domain.Entities;
 using IdentityService.Domain.Interfaces.Repositories.UserRepository;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace IdentityService.DAL.Repositories;
 
@@ -63,5 +65,23 @@ public class UserRepository : IUserRepository<User>
         {
             await connection.QueryAsync(queryBuilder.ToString(), parameters);
         }
+    }
+    
+    public async Task EFCoreUpdateByEntityAsync(User user)
+    {
+        var queryBuilder = new StringBuilder("UPDATE public.\"Users\" SET ");
+        var parameters = new List<NpgsqlParameter>();
+        var listPropertyNames = parameters.GetDynamicParameters(user);
+        listPropertyNames.Remove("Id");
+
+        foreach (var l in listPropertyNames)
+        {
+            queryBuilder.Append($"\"{l}\" = @{l}, ");
+        }
+
+        queryBuilder.Length -= 2;
+        queryBuilder.Append($" WHERE \"Id\" = @Id");
+
+        await _dbContext.Database.ExecuteSqlRawAsync(queryBuilder.ToString(), parameters);
     }
 }

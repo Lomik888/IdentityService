@@ -11,4 +11,6 @@ public interface IUserRepository<TEntity>
     Task DapperRemoveUserByIdAsync(long userId);
 
     Task DapperUpdateByEntityAsync(TEntity user);
+
+    Task EFCoreUpdateByEntityAsync(TEntity user);
 }

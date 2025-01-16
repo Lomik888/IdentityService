@@ -89,8 +89,8 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(userModifiedDto);
         user.Id = userId;
 
-        await _userRepository.DapperUpdateByEntityAsync(user);
-
+        // await _userRepository.DapperUpdateByEntityAsync(user);
+        await _userRepository.EFCoreUpdateByEntityAsync(user);
         return new BaseResult()
         {
             StatusCode = StatusCodes.Status200OK
